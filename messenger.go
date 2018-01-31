@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/fsm/fsm"
+	targetutil "github.com/fsm/target-util"
 )
 
 // SetupWebhook adds support for the Messenger Platform's webhook verification
@@ -36,6 +37,10 @@ func SetupWebhook(w http.ResponseWriter, r *http.Request) {
 //
 // https://developers.facebook.com/docs/messenger-platform/getting-started/webhook-setup
 func GetMessageReceivedWebhook(stateMachine fsm.StateMachine, store fsm.Store) func(http.ResponseWriter, *http.Request) {
+	// Build Statemap
+	stateMap := targetutil.GetStateMap(stateMachine)
+
+	// Return HandlerFunc
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Get body
 		buf := new(bytes.Buffer)
@@ -50,33 +55,16 @@ func GetMessageReceivedWebhook(stateMachine fsm.StateMachine, store fsm.Store) f
 		for _, i := range cb.Entry {
 			// Iterate over each messaging event
 			for _, messagingEvent := range i.MessagingEvents {
-
-				// Get traverser
-				newTraverser := false
-				traverser, err := store.FetchTraverser(messagingEvent.Sender.ID)
-				if err != nil {
-					traverser, _ = store.CreateTraverser(messagingEvent.Sender.ID)
-					traverser.SetCurrentState("start")
-					newTraverser = true
-				}
-
-				// Create emitter
-				emitter := &FacebookEmitter{
-					UUID: traverser.UUID(),
-				}
-
-				// Get current state
-				currentState := stateMachine[traverser.CurrentState()](emitter, traverser)
-				if newTraverser {
-					currentState.EntryAction()
-				}
-
-				// Transition
-				newState := currentState.Transition(messagingEvent.Message.Text)
-				err = newState.EntryAction()
-				if err == nil {
-					traverser.SetCurrentState(newState.Slug)
-				}
+				// Perform a Step
+				targetutil.Step(
+					messagingEvent.Sender.ID,
+					messagingEvent.Message.Text,
+					store,
+					&FacebookEmitter{
+						UUID: messagingEvent.Sender.ID,
+					},
+					stateMap,
+				)
 			}
 		}
 		w.WriteHeader(http.StatusOK)
