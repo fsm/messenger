@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"reflect"
+	"time"
 
 	"github.com/BrandonRomano/wrecker"
 	"github.com/fsm/emitable"
@@ -44,9 +45,13 @@ type QuickReply struct {
 	Payload     string `json:"payload"`
 }
 
+const typingTime = 1000
+
 func (f *FacebookEmitter) Emit(input interface{}) error {
 	switch v := input.(type) {
 	case string:
+		f.Emit(emitable.Typing{Enabled: true})
+		f.Emit(emitable.Sleep{LengthMillis: typingTime})
 		SendMessage(&MessageData{
 			Recipient: MessageRecipient{
 				ID: f.UUID,
@@ -58,6 +63,8 @@ func (f *FacebookEmitter) Emit(input interface{}) error {
 		return nil
 
 	case emitable.Audio:
+		f.Emit(emitable.Typing{Enabled: true})
+		f.Emit(emitable.Sleep{LengthMillis: typingTime})
 		SendMessage(&MessageData{
 			Recipient: MessageRecipient{
 				ID: f.UUID,
@@ -74,6 +81,8 @@ func (f *FacebookEmitter) Emit(input interface{}) error {
 		return nil
 
 	case emitable.File:
+		f.Emit(emitable.Typing{Enabled: true})
+		f.Emit(emitable.Sleep{LengthMillis: typingTime})
 		SendMessage(&MessageData{
 			Recipient: MessageRecipient{
 				ID: f.UUID,
@@ -90,6 +99,8 @@ func (f *FacebookEmitter) Emit(input interface{}) error {
 		return nil
 
 	case emitable.Image:
+		f.Emit(emitable.Typing{Enabled: true})
+		f.Emit(emitable.Sleep{LengthMillis: typingTime})
 		SendMessage(&MessageData{
 			Recipient: MessageRecipient{
 				ID: f.UUID,
@@ -106,6 +117,8 @@ func (f *FacebookEmitter) Emit(input interface{}) error {
 		return nil
 
 	case emitable.Video:
+		f.Emit(emitable.Typing{Enabled: true})
+		f.Emit(emitable.Sleep{LengthMillis: typingTime})
 		SendMessage(&MessageData{
 			Recipient: MessageRecipient{
 				ID: f.UUID,
@@ -122,6 +135,8 @@ func (f *FacebookEmitter) Emit(input interface{}) error {
 		return nil
 
 	case emitable.QuickReply:
+		f.Emit(emitable.Typing{Enabled: true})
+		f.Emit(emitable.Sleep{LengthMillis: typingTime})
 		replies := make([]QuickReply, 0)
 		for _, reply := range v.Replies {
 			replies = append(replies, QuickReply{
@@ -152,6 +167,10 @@ func (f *FacebookEmitter) Emit(input interface{}) error {
 			},
 			SenderAction: action,
 		})
+		return nil
+
+	case emitable.Sleep:
+		time.Sleep(time.Millisecond * time.Duration(v.LengthMillis))
 		return nil
 	}
 
