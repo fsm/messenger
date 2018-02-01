@@ -48,7 +48,7 @@ func GetMessageReceivedWebhook(stateMachine fsm.StateMachine, store fsm.Store) f
 		body := buf.String()
 
 		// Parse body into struct
-		cb := new(MessageReceivedCallback)
+		cb := new(messageReceivedCallback)
 		json.Unmarshal([]byte(body), cb)
 
 		// For each entry
@@ -60,7 +60,7 @@ func GetMessageReceivedWebhook(stateMachine fsm.StateMachine, store fsm.Store) f
 					messagingEvent.Sender.ID,
 					messagingEvent.Message.Text,
 					store,
-					&FacebookEmitter{
+					&facebookEmitter{
 						UUID: messagingEvent.Sender.ID,
 					},
 					stateMap,
