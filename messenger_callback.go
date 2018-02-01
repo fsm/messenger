@@ -1,32 +1,32 @@
 package messenger
 
-type MessageReceivedCallback struct {
+type messageReceivedCallback struct {
 	Object string         `json:"object"`
-	Entry  []MessageEntry `json:"entry"`
+	Entry  []messageEntry `json:"entry"`
 }
 
-type MessageEntry struct {
+type messageEntry struct {
 	ID              string           `json:"id"`
 	Time            int64            `json:"time"`
-	MessagingEvents []MessagingEvent `json:"messaging"`
+	MessagingEvents []messagingEvent `json:"messaging"`
 }
 
-type MessagingEvent struct {
-	Sender    Sender    `json:"sender"`
-	Recipient Recipient `json:"recipient"`
+type messagingEvent struct {
+	Sender    sender    `json:"sender"`
+	Recipient recipient `json:"recipient"`
 	Timestamp int64     `json:"timestamp"`
-	Message   Message   `json:"message"`
+	Message   message   `json:"message"`
 }
 
-type Sender struct {
+type sender struct {
 	ID string `json:"id"`
 }
 
-type Recipient struct {
+type recipient struct {
 	ID string `json:"id"`
 }
 
-type Message struct {
+type message struct {
 	MessageID string `json:"mid"`
 	Sequence  int64  `json:"seq"`
 	Text      string `json:"text"`

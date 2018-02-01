@@ -10,36 +10,36 @@ import (
 	"github.com/fsm/emitable"
 )
 
-type MessageData struct {
-	Recipient    MessageRecipient `json:"recipient"`
+type messageData struct {
+	Recipient    messageRecipient `json:"recipient"`
 	SenderAction string           `json:"sender_action,omitempty"`
-	Message      *SendMessageData `json:"message"`
+	Message      *sendMessageData `json:"message"`
 }
 
-type MessageRecipient struct {
+type messageRecipient struct {
 	ID string `json:"id"`
 }
 
-type SendMessageData struct {
+type sendMessageData struct {
 	Text         string       `json:"text,omitempty"`
-	Attachment   *Attachment  `json:"attachment,omitempty"`
-	QuickReplies []QuickReply `json:"quick_replies,omitempty"`
+	Attachment   *attachment  `json:"attachment,omitempty"`
+	QuickReplies []quickReply `json:"quick_replies,omitempty"`
 }
 
-type Attachment struct {
+type attachment struct {
 	Type    string  `json:"type"`
-	Payload Payload `json:"payload"`
+	Payload payload `json:"payload"`
 }
 
-type Payload struct {
+type payload struct {
 	URL string `json:"url"`
 }
 
-type FacebookEmitter struct {
+type facebookEmitter struct {
 	UUID string
 }
 
-type QuickReply struct {
+type quickReply struct {
 	ContentType string `json:"content_type"`
 	Title       string `json:"title"`
 	Payload     string `json:"payload"`
@@ -47,16 +47,16 @@ type QuickReply struct {
 
 const typingTime = 1000
 
-func (f *FacebookEmitter) Emit(input interface{}) error {
+func (f *facebookEmitter) Emit(input interface{}) error {
 	switch v := input.(type) {
 	case string:
 		f.Emit(emitable.Typing{Enabled: true})
 		f.Emit(emitable.Sleep{LengthMillis: typingTime})
-		SendMessage(&MessageData{
-			Recipient: MessageRecipient{
+		sendMessage(&messageData{
+			Recipient: messageRecipient{
 				ID: f.UUID,
 			},
-			Message: &SendMessageData{
+			Message: &sendMessageData{
 				Text: v,
 			},
 		})
@@ -65,14 +65,14 @@ func (f *FacebookEmitter) Emit(input interface{}) error {
 	case emitable.Audio:
 		f.Emit(emitable.Typing{Enabled: true})
 		f.Emit(emitable.Sleep{LengthMillis: typingTime})
-		SendMessage(&MessageData{
-			Recipient: MessageRecipient{
+		sendMessage(&messageData{
+			Recipient: messageRecipient{
 				ID: f.UUID,
 			},
-			Message: &SendMessageData{
-				Attachment: &Attachment{
+			Message: &sendMessageData{
+				Attachment: &attachment{
 					Type: "audio",
-					Payload: Payload{
+					Payload: payload{
 						URL: v.URL,
 					},
 				},
@@ -83,14 +83,14 @@ func (f *FacebookEmitter) Emit(input interface{}) error {
 	case emitable.File:
 		f.Emit(emitable.Typing{Enabled: true})
 		f.Emit(emitable.Sleep{LengthMillis: typingTime})
-		SendMessage(&MessageData{
-			Recipient: MessageRecipient{
+		sendMessage(&messageData{
+			Recipient: messageRecipient{
 				ID: f.UUID,
 			},
-			Message: &SendMessageData{
-				Attachment: &Attachment{
+			Message: &sendMessageData{
+				Attachment: &attachment{
 					Type: "file",
-					Payload: Payload{
+					Payload: payload{
 						URL: v.URL,
 					},
 				},
@@ -101,14 +101,14 @@ func (f *FacebookEmitter) Emit(input interface{}) error {
 	case emitable.Image:
 		f.Emit(emitable.Typing{Enabled: true})
 		f.Emit(emitable.Sleep{LengthMillis: typingTime})
-		SendMessage(&MessageData{
-			Recipient: MessageRecipient{
+		sendMessage(&messageData{
+			Recipient: messageRecipient{
 				ID: f.UUID,
 			},
-			Message: &SendMessageData{
-				Attachment: &Attachment{
+			Message: &sendMessageData{
+				Attachment: &attachment{
 					Type: "image",
-					Payload: Payload{
+					Payload: payload{
 						URL: v.URL,
 					},
 				},
@@ -119,14 +119,14 @@ func (f *FacebookEmitter) Emit(input interface{}) error {
 	case emitable.Video:
 		f.Emit(emitable.Typing{Enabled: true})
 		f.Emit(emitable.Sleep{LengthMillis: typingTime})
-		SendMessage(&MessageData{
-			Recipient: MessageRecipient{
+		sendMessage(&messageData{
+			Recipient: messageRecipient{
 				ID: f.UUID,
 			},
-			Message: &SendMessageData{
-				Attachment: &Attachment{
+			Message: &sendMessageData{
+				Attachment: &attachment{
 					Type: "video",
-					Payload: Payload{
+					Payload: payload{
 						URL: v.URL,
 					},
 				},
@@ -137,19 +137,19 @@ func (f *FacebookEmitter) Emit(input interface{}) error {
 	case emitable.QuickReply:
 		f.Emit(emitable.Typing{Enabled: true})
 		f.Emit(emitable.Sleep{LengthMillis: typingTime})
-		replies := make([]QuickReply, 0)
+		replies := make([]quickReply, 0)
 		for _, reply := range v.Replies {
-			replies = append(replies, QuickReply{
+			replies = append(replies, quickReply{
 				ContentType: "text",
 				Title:       reply,
 				Payload:     reply,
 			})
 		}
-		SendMessage(&MessageData{
-			Recipient: MessageRecipient{
+		sendMessage(&messageData{
+			Recipient: messageRecipient{
 				ID: f.UUID,
 			},
-			Message: &SendMessageData{
+			Message: &sendMessageData{
 				Text:         v.Message,
 				QuickReplies: replies,
 			},
@@ -161,8 +161,8 @@ func (f *FacebookEmitter) Emit(input interface{}) error {
 		if v.Enabled {
 			action = "typing_on"
 		}
-		SendMessage(&MessageData{
-			Recipient: MessageRecipient{
+		sendMessage(&messageData{
+			Recipient: messageRecipient{
 				ID: f.UUID,
 			},
 			SenderAction: action,
@@ -177,7 +177,7 @@ func (f *FacebookEmitter) Emit(input interface{}) error {
 	return errors.New("FacebookEmitter cannot handle " + reflect.TypeOf(input).String())
 }
 
-func SendMessage(m *MessageData) {
+func sendMessage(m *messageData) {
 	client := wrecker.New("https://graph.facebook.com/v2.6")
 	client.Post("/me/messages").
 		URLParam("access_token", os.Getenv("MESSENGER_ACCESS_TOKEN")).
