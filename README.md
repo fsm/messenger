@@ -13,6 +13,43 @@ MESSENGER_VERIFY_TOKEN=""
 MESSENGER_ACCESS_TOKEN=""
 ```
 
+## Getting Started
+
+> Note: The environment variables above are assumed to be set in this example code:
+
+```go
+package main
+
+import (
+	"net/http"
+
+	"github.com/fsm/fsm"
+	"github.com/fsm/messenger"
+	"github.com/julienschmidt/httprouter"
+)
+
+func main() {
+	router := &httprouter.Router{
+		RedirectTrailingSlash:  true,
+		RedirectFixedPath:      true,
+		HandleMethodNotAllowed: true,
+    }
+
+	router.HandlerFunc(http.MethodGet, "/facebook", messenger.SetupWebhook)
+    router.HandlerFunc(http.MethodPost, "/facebook", messenger.GetMessageReceivedWebhook(getStateMachine(), getStore()))
+
+	http.ListenAndServe(":5000", router)
+}
+
+func getStateMachine() fsm.StateMachine {
+	// ...
+}
+
+func getStore() fsm.Store {
+	// ...
+}
+```
+
 # License
 
 [MIT](LICENSE.md)
