@@ -10,6 +10,8 @@ import (
 	targetutil "github.com/fsm/target-util"
 )
 
+const platform = "facebook-messenger"
+
 // SetupWebhook adds support for the Messenger Platform's webhook verification
 // to your webhook. This is required to ensure your webhook is authentic and working.
 //
@@ -57,6 +59,7 @@ func GetMessageReceivedWebhook(stateMachine fsm.StateMachine, store fsm.Store) f
 			for _, messagingEvent := range i.MessagingEvents {
 				// Perform a Step
 				targetutil.Step(
+					platform,
 					messagingEvent.Sender.ID,
 					messagingEvent.Message.Text,
 					store,
