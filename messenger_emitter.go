@@ -45,7 +45,7 @@ type quickReply struct {
 	Payload     string `json:"payload"`
 }
 
-const typingTime = 1000
+const typingTime = 500
 
 func (f *facebookEmitter) Emit(input interface{}) error {
 	switch v := input.(type) {
