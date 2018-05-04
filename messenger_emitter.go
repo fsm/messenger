@@ -11,9 +11,10 @@ import (
 )
 
 type messageData struct {
-	Recipient    messageRecipient `json:"recipient"`
-	SenderAction string           `json:"sender_action,omitempty"`
-	Message      *sendMessageData `json:"message"`
+	MessagingType string           `json:"messaging_type"`
+	Recipient     messageRecipient `json:"recipient"`
+	SenderAction  string           `json:"sender_action,omitempty"`
+	Message       *sendMessageData `json:"message"`
 }
 
 type messageRecipient struct {
@@ -178,6 +179,7 @@ func (f *facebookEmitter) Emit(input interface{}) error {
 }
 
 func sendMessage(m *messageData) {
+	m.MessagingType = "RESPONSE"
 	client := wrecker.New("https://graph.facebook.com/v2.6")
 	client.Post("/me/messages").
 		URLParam("access_token", os.Getenv("MESSENGER_ACCESS_TOKEN")).
