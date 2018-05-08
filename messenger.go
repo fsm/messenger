@@ -58,7 +58,7 @@ func GetMessageReceivedWebhook(stateMachine fsm.StateMachine, store fsm.Store) f
 			// Iterate over each messaging event
 			for _, messagingEvent := range i.MessagingEvents {
 				// Perform a Step
-				targetutil.Step(
+				go targetutil.Step(
 					platform,
 					messagingEvent.Sender.ID,
 					messagingEvent.Message.Text,
